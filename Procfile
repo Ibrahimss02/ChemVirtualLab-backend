@@ -1,0 +1,1 @@
+web: build/install/CemVirtualLab-backend/bin/CemVirtualLab-backend
