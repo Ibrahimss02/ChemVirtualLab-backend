@@ -118,5 +118,6 @@ class Route {
         getLeaderboard()
         addSkinToUserInventory()
         addNewUser()
+        updateUser()
     }
 }
