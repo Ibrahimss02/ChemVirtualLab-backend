@@ -21,6 +21,7 @@ class DatabaseFactory {
             val tables = listOf<Table>(UserTable, SkinsTable, UserSkinTable)
                 .forEach {
                     SchemaUtils.create(it)
+                    SchemaUtils.createMissingTablesAndColumns(it)
                 }
         }
     }
