@@ -38,14 +38,14 @@ class Repository {
         }
     }
 
-    suspend fun updateUser(body: UserBody) {
+    suspend fun updateUser(uid: String, body: UserBody) {
         dbFactory.dbQuery {
-            UserTable.update({ UserTable.uid eq body.id }) { table ->
+            UserTable.update (where = {UserTable.uid eq uid}) { table ->
                 table[email] = body.email
                 table[name] = body.name
+                table[exp] = body.exp
                 table[level] = body.level
                 table[coin] = body.coin
-                table[exp] = body.exp
                 table[badge] = body.badge
             }
         }

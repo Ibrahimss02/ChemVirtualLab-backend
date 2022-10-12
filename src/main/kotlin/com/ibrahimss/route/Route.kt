@@ -53,6 +53,13 @@ class Route {
 
     private fun Route.updateUser() {
         post<RouteLocation.User.Id> {
+            val uid = try {
+                call.parameters["userId"]
+            } catch (e: Exception) {
+                call.error(e)
+                return@post
+            } ?: ""
+
             val body = try {
                 call.receive<UserBody>()
             } catch (e: Exception) {
@@ -61,7 +68,7 @@ class Route {
             }
 
             call.response {
-                repository.updateUser(body)
+                repository.updateUser(uid, body)
             }
         }
     }
