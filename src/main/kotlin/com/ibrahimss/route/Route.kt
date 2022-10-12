@@ -2,6 +2,7 @@ package com.ibrahimss.route
 
 import com.ibrahimss.data.Repository
 import com.ibrahimss.model.BuySkinBody
+import com.ibrahimss.model.NewUserBody
 import com.ibrahimss.model.UserBody
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -50,6 +51,21 @@ class Route {
         }
     }
 
+    private fun Route.updateUser() {
+        post<RouteLocation.User.Id> {
+            val body = try {
+                call.receive<UserBody>()
+            } catch (e: Exception) {
+                call.error(e)
+                return@post
+            }
+
+            call.response {
+                repository.updateUser(body)
+            }
+        }
+    }
+
     private fun Route.getAllSkins() {
         get<RouteLocation.Skin> {
             call.response {
@@ -84,7 +100,7 @@ class Route {
     private fun Route.addNewUser() {
         post<RouteLocation.User> {
             val body = try {
-                call.receive<UserBody>()
+                call.receive<NewUserBody>()
             } catch (e: Exception) {
                 call.error(e)
                 return@post

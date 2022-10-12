@@ -4,17 +4,12 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.ibrahimss.data.table.SkinsTable
 import com.ibrahimss.data.table.UserSkinTable
 import com.ibrahimss.data.table.UserTable
-import com.ibrahimss.model.BuySkinBody
-import com.ibrahimss.model.SkinResponse
-import com.ibrahimss.model.UserBody
-import com.ibrahimss.model.UserResponse
+import com.ibrahimss.model.*
 import com.ibrahimss.util.mapRowToUserLiteResponse
 import com.ibrahimss.util.mapRowToUserResponse
 import com.ibrahimss.util.mapToSkinResponse
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class Repository {
 
@@ -29,15 +24,29 @@ class Repository {
         }
     }
 
-    suspend fun addNewUser(body: UserBody) {
+    suspend fun addNewUser(body: NewUserBody) {
         dbFactory.dbQuery {
             UserTable.insert { table ->
                 table[uid] = "USER${NanoIdUtils.randomNanoId()}"
                 table[email] = body.email
                 table[name] = body.name
-                table[level] = 0
+                table[exp] = 0
+                table[level] = 1
                 table[coin] = 0
                 table[badge] = 0
+            }
+        }
+    }
+
+    suspend fun updateUser(body: UserBody) {
+        dbFactory.dbQuery {
+            UserTable.update({ UserTable.uid eq body.id }) { table ->
+                table[email] = body.email
+                table[name] = body.name
+                table[level] = body.level
+                table[coin] = body.coin
+                table[exp] = body.exp
+                table[badge] = body.badge
             }
         }
     }
