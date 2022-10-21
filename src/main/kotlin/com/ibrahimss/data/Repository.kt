@@ -27,7 +27,7 @@ class Repository {
     suspend fun addNewUser(body: NewUserBody) {
         dbFactory.dbQuery {
             UserTable.insert { table ->
-                table[uid] = "USER${NanoIdUtils.randomNanoId()}"
+                table[uid] = body.uid
                 table[email] = body.email
                 table[name] = body.name
                 table[exp] = 0
