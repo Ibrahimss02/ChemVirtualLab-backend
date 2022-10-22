@@ -18,7 +18,7 @@ class DatabaseFactory {
     init {
         Database.connect(dataSource())
         transaction {
-            val tables = listOf<Table>(UserTable, SkinsTable, UserSkinTable)
+            listOf<Table>(UserTable, SkinsTable, UserSkinTable)
                 .forEach {
                     SchemaUtils.create(it)
                     SchemaUtils.createMissingTablesAndColumns(it)

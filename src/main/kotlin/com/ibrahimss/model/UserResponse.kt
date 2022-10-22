@@ -18,9 +18,9 @@ data class UserResponse(
     @field:SerializedName("exp")
     val exp: Int,
     
-    @field:SerializedName("coins")
+    @field:SerializedName("coin")
     val coins: Int,
     
-    @field:SerializedName("badge")
+    @field:SerializedName("badges")
     val badge: Int,
 )
