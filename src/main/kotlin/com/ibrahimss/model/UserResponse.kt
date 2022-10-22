@@ -14,13 +14,13 @@ data class UserResponse(
     
     @field:SerializedName("level")
     val level: Int,
+
+    @field:SerializedName("exp")
+    val exp: Int,
     
     @field:SerializedName("coins")
     val coins: Int,
     
     @field:SerializedName("badge")
     val badge: Int,
-
-    @field:SerializedName("skins")
-    val skins: List<SkinResponse>,
 )

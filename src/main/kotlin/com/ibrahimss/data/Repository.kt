@@ -7,6 +7,7 @@ import com.ibrahimss.data.table.UserTable
 import com.ibrahimss.model.*
 import com.ibrahimss.util.mapRowToUserLiteResponse
 import com.ibrahimss.util.mapRowToUserResponse
+import com.ibrahimss.util.mapRowToUserSkinResponse
 import com.ibrahimss.util.mapToSkinResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -71,6 +72,15 @@ class Repository {
     }
 
     suspend fun getUser(userId: String): UserResponse = dbFactory.dbQuery {
+        UserTable.select{
+            UserTable.uid eq userId
+        }
+            .firstNotNullOf {
+                return@dbQuery it.mapRowToUserResponse()
+            }
+    }
+
+    suspend fun getUserSkin(userId: String): UserSkinResponse = dbFactory.dbQuery {
         val userSkins = UserSkinTable.select{
             UserSkinTable.id eq userId
         }.mapNotNull {
@@ -92,7 +102,7 @@ class Repository {
             UserTable.uid eq userId
         }
             .firstNotNullOf {
-                return@dbQuery it.mapRowToUserResponse(listUserSkin)
+                return@dbQuery it.mapRowToUserSkinResponse(listUserSkin)
             }
     }
 }
