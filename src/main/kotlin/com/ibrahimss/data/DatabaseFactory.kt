@@ -5,20 +5,22 @@ import com.ibrahimss.data.table.UserSkinTable
 import com.ibrahimss.data.table.UserTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.server.config.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.net.URI
 
-class DatabaseFactory {
+object DatabaseFactory {
 
-    init {
-        Database.connect(dataSource())
-        transaction {
-            listOf<Table>(UserTable, SkinsTable, UserSkinTable)
+    fun init(config: ApplicationConfig) {
+        val driverClassName = config.property("storage.driverClassName").getString()
+        val jdbcUrl = config.property("storage.jdbcURL").getString()
+        val database = Database.connect(createHikariDataSource(jdbcUrl, driverClassName))
+
+        transaction(database) {
+            listOf(UserTable, SkinsTable, UserSkinTable)
                 .forEach {
                     SchemaUtils.create(it)
                     SchemaUtils.createMissingTablesAndColumns(it)
@@ -26,22 +28,15 @@ class DatabaseFactory {
         }
     }
 
-    private fun dataSource(): HikariDataSource {
-        val config = HikariConfig()
-        config.apply {
-            driverClassName = System.getenv("JDBC_DRIVER")
-//            jdbcUrl = System.getenv("DATABASE_URL")
-            maximumPoolSize = 6
-            isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-
-            val uri = URI(System.getenv("DATABASE_URL"))
-            val username = uri.userInfo.split(":").toTypedArray()[0]
-            val password = uri.userInfo.split(":").toTypedArray()[1]
-            jdbcUrl = "jdbc:postgresql://" + uri.host + ":" + uri.port + uri.path + "?sslmode=require" + "&user=$username&password=$password"
-        }
-        return HikariDataSource(config)
-    }
+    private fun createHikariDataSource(url: String, driver: String) = HikariDataSource(HikariConfig().apply {
+        driverClassName = driver
+        jdbcUrl = url
+        maximumPoolSize = 6
+        username = "postgres"
+        password = "Admin2002"
+        isAutoCommit = false
+        transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+    })
 
     suspend fun <T> dbQuery(block: () -> T): T =
         withContext(Dispatchers.IO) {

@@ -1,6 +1,7 @@
 package com.ibrahimss.data
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
+import com.ibrahimss.data.DatabaseFactory.dbQuery
 import com.ibrahimss.data.table.SkinsTable
 import com.ibrahimss.data.table.UserSkinTable
 import com.ibrahimss.data.table.UserTable
@@ -14,45 +15,44 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class Repository {
 
-    private var dbFactory: DatabaseFactory = DatabaseFactory()
-
-    suspend fun buySkin(body: BuySkinBody) {
-        dbFactory.dbQuery {
-            UserSkinTable.insert { table ->
-                table[id] = body.userId
-                table[skinId] = body.skinId
-            }
+    suspend fun buySkin(body: BuySkinBody) = dbQuery {
+        val insertStatement = UserSkinTable.insert { table ->
+            table[id] = body.userId
+            table[skinId] = body.skinId
         }
+
+        insertStatement.resultedValues?.singleOrNull()?.get(UserSkinTable.id)
+
     }
 
-    suspend fun addNewUser(body: NewUserBody) {
-        dbFactory.dbQuery {
-            UserTable.insert { table ->
-                table[uid] = body.uid
-                table[email] = body.email
-                table[name] = body.name
-                table[exp] = 0
-                table[level] = 1
-                table[coin] = 0
-                table[badge] = 0
-            }
+    suspend fun addNewUser(body: NewUserBody) = dbQuery {
+        val insertStatement = UserTable.insert { table ->
+            table[uid] = body.uid
+            table[email] = body.email
+            table[name] = body.name
+            table[exp] = 0
+            table[level] = 1
+            table[coin] = 0
+            table[badge] = 0
         }
+
+        insertStatement.resultedValues?.singleOrNull()?.get(UserTable.uid)
     }
 
-    suspend fun updateUser(uid: String, body: UserBody) {
-        dbFactory.dbQuery {
-            UserTable.update (where = {UserTable.uid eq uid}) { table ->
-                table[email] = body.email
-                table[name] = body.name
-                table[exp] = body.exp
-                table[level] = body.level
-                table[coin] = body.coin
-                table[badge] = body.badge
-            }
-        }
+
+    suspend fun updateUser(uid: String, body: UserBody) = dbQuery {
+        UserTable.update(where = { UserTable.uid eq uid }) { table ->
+            table[email] = body.email
+            table[name] = body.name
+            table[exp] = body.exp
+            table[level] = body.level
+            table[coin] = body.coin
+            table[badge] = body.badge
+        } > 0
     }
 
-    suspend fun getUserLeaderboard() = dbFactory.dbQuery {
+
+    suspend fun getUserLeaderboard() = dbQuery {
         UserTable.slice(
             UserTable.name,
             UserTable.coin
@@ -63,7 +63,7 @@ class Repository {
             }
     }
 
-    suspend fun getAllSkins() = dbFactory.dbQuery {
+    suspend fun getAllSkins() = dbQuery {
         SkinsTable.selectAll()
             .orderBy(SkinsTable.price to SortOrder.ASC)
             .mapNotNull {
@@ -71,17 +71,17 @@ class Repository {
             }
     }
 
-    suspend fun getUser(userId: String): UserResponse = dbFactory.dbQuery {
-        UserTable.select{
+    suspend fun getUser(userId: String): UserResponse = dbQuery {
+        UserTable.select {
             UserTable.uid eq userId
         }
             .firstNotNullOf {
-                return@dbQuery it.mapRowToUserResponse()
+                it.mapRowToUserResponse()
             }
     }
 
-    suspend fun getUserSkin(userId: String): UserSkinResponse = dbFactory.dbQuery {
-        val userSkins = UserSkinTable.select{
+    suspend fun getUserSkin(userId: String): UserSkinResponse = dbQuery {
+        val userSkins = UserSkinTable.select {
             UserSkinTable.id eq userId
         }.mapNotNull {
             it[UserSkinTable.skinId]
@@ -98,11 +98,11 @@ class Repository {
             listUserSkin += skin
         }
 
-        UserTable.select{
+        UserTable.select {
             UserTable.uid eq userId
         }
             .firstNotNullOf {
-                return@dbQuery it.mapRowToUserSkinResponse(listUserSkin)
+                it.mapRowToUserSkinResponse(listUserSkin)
             }
     }
 }
