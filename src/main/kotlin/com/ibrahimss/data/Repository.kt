@@ -1,6 +1,5 @@
 package com.ibrahimss.data
 
-import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.ibrahimss.data.DatabaseFactory.dbQuery
 import com.ibrahimss.data.table.SkinsTable
 import com.ibrahimss.data.table.UserSkinTable
@@ -11,7 +10,6 @@ import com.ibrahimss.util.mapRowToUserResponse
 import com.ibrahimss.util.mapRowToUserSkinResponse
 import com.ibrahimss.util.mapToSkinResponse
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class Repository {
 
@@ -39,7 +37,6 @@ class Repository {
         insertStatement.resultedValues?.singleOrNull()?.get(UserTable.uid)
     }
 
-
     suspend fun updateUser(uid: String, body: UserBody) = dbQuery {
         UserTable.update(where = { UserTable.uid eq uid }) { table ->
             table[email] = body.email
@@ -51,16 +48,17 @@ class Repository {
         } > 0
     }
 
-
     suspend fun getUserLeaderboard() = dbQuery {
-        UserTable.slice(
+        val userList = UserTable.slice(
             UserTable.name,
             UserTable.coin
         ).selectAll()
-            .orderBy(UserTable.coin to SortOrder.ASC)
+            .orderBy(UserTable.coin to SortOrder.DESC)
             .mapNotNull {
                 it.mapRowToUserLiteResponse()
             }
+
+        LeaderboardResponse(userList)
     }
 
     suspend fun getAllSkins() = dbQuery {

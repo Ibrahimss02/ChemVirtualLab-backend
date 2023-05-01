@@ -6,6 +6,6 @@ data class UserLiteResponse(
     @field:SerializedName("name")
     val name: String,
     
-    @field:SerializedName("coins")
+    @field:SerializedName("coin")
     val coins: Int,
 )
